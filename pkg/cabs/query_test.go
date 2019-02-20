@@ -1,26 +1,28 @@
 package cabs_test
 
 import (
-	_ "github.com/lib/pq"
-	"testing"
+	_ "github.com/go-sql-driver/mysql"
 	"fmt"
-	"github.com/jmoiron/sqlx"
-	"bitbucket.org/ffxblue/api-video/lib/image"
+	"testing"
 	"time"
+	"github.com/jmoiron/sqlx"
+	"github.com/nikhil-github/api-cab-data/pkg/cabs"
+	"context"
 )
 
 func TestCountByPickUpDate(t *testing.T) {
+	// 2013-12-01 00:13:00
+	date := time.Date(2013,12,31,0,1,0,0,time.UTC)
 	type args struct {
-		Limit   int
-		SinceID int
+		Medallion string
+		PickUpDate  time.Time
 	}
 	type fields struct {
 
 	}
 	type want struct {
+		Count int
 		Err     error
-		VideoIDs  []int
-		Message string
 	}
 	testTable := []struct {
 		Name   string
@@ -30,21 +32,20 @@ func TestCountByPickUpDate(t *testing.T) {
 	}{
 		{
 			Name: "Success - get one",
-			Args: args{Limit: 1},
+			Args: args{Medallion: "temp", PickUpDate: time.Time{}},
 		},
 	}
 	for _, tt := range testTable {
 		t.Run(tt.Name, func(t *testing.T) {
-			db, err := sqlx.Open("postgres", string("postgres://app:password@localhost:32768/app?sslmode=disable"))
+			db, err := sqlx.Open("mysql", string("root:password@tcp(localhost:3306)/cabtrips?parseTime=true"))
 			if err != nil {
-				fmt.Println("failed DB")
+				fmt.Println("failed DB",err)
 			}
-			d,_ := time.ParseDuration("100h")
-			qs := image.NewQueryer(db,d, tracer)
-
-			ids,err := qs.Unprocessed(ctx,0,3)
+			fmt.Println("database connetion ",db.DriverName())
+			svc := cabs.NewQueryer(db)
+			count, err := svc.CabTripsByPickUpDate(context.Background(),"67EB082BFFE72095EAF18488BEA96050",date)
 			fmt.Println("err=>",err)
-			fmt.Println("records=>",ids)
+			fmt.Println("records=>",count)
 
 		})
 	}

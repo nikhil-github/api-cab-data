@@ -6,6 +6,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
+	"fmt"
 )
 
 type DBQueryer interface {
@@ -14,7 +15,7 @@ type DBQueryer interface {
 
 // Queryer is for providing database query operations.
 type Queryer struct {
-	db   DBQueryer
+	db DBQueryer
 }
 
 // NewQueryer returns a new instance to query cab trip data.
@@ -32,11 +33,12 @@ func (q *Queryer) CabTripsByPickUpDate(ctx context.Context, medallion string,pic
 		FROM
 			cab_trip_data
 		WHERE	
-			medallion = $1
+			medallion = ?
 		AND
-			pickup_datetime::DATE = $2::DATE;
+			DATE(pickup_datetime) = DATE(?);
 	`
 	rows,err := q.db.QueryxContext(ctx, query, medallion,pickUpDate)
+	fmt.Println(err)
 	if err != nil {
 		return 0,errors.Wrap(err,"failed to query")
 	}
