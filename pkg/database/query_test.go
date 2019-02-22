@@ -1,4 +1,4 @@
-package data_test
+package database_test
 
 import (
 	"testing"
@@ -10,7 +10,7 @@ import (
 	"gopkg.in/DATA-DOG/go-sqlmock.v1"
 	"time"
 	"errors"
-	"github.com/nikhil-github/api-cab-data/pkg/data"
+	"github.com/nikhil-github/api-cab-data/pkg/database"
 	"go.uber.org/zap"
 )
 
@@ -63,7 +63,7 @@ func TestTripsByPickUpDate(t *testing.T) {
 			defer db.Close()
 			tt.Fields.MockOperations(mock)
 
-			dao := data.NewQueryer(db,zap.NewNop())
+			dao := database.NewQueryer(db,zap.NewNop())
 			count, err := dao.TripsByPickUpDate(context.Background(),tt.Args.CabID,tt.Args.PickUpDate)
 			assert.NoError(t, mock.ExpectationsWereMet(), "DB Expectations")
 			if tt.Want.Error != "" {

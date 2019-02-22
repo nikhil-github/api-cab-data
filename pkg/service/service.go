@@ -4,13 +4,9 @@ import (
 	"context"
 	"time"
 	"fmt"
+
+	"github.com/nikhil-github/api-cab-data/pkg/output"
 )
-
-
-type Result struct{
-	Medallion string
-	Trips int
-}
 
 type Service struct {
 	cacheGetter CacheGetter
@@ -34,9 +30,9 @@ func NewService( g Getter,cg CacheGetter,cs CacheSetter) *Service {
 	return &Service{dbGetter:g,cacheGetter:cg,cacheSetter:cs}
 }
 
-func (s *Service) Trips(ctx context.Context, medallions []string,pickUpDate time.Time,byPassCache bool) ([]Result, error) {
+func (s *Service) Trips(ctx context.Context, medallions []string,pickUpDate time.Time,byPassCache bool) ([]output.Result, error) {
 
-	var result []Result
+	var result []output.Result
 	for _, medallion := range medallions {
 		var count int
 		var err error
@@ -49,7 +45,7 @@ func (s *Service) Trips(ctx context.Context, medallions []string,pickUpDate time
 			}
 		}
 
-		result = append(result,Result{medallion,count})
+		result = append(result, output.Result{medallion,count})
 	}
 	return result,nil
 }

@@ -9,7 +9,8 @@ import (
 	"fmt"
 	"github.com/pkg/errors"
 	"github.com/nikhil-github/api-cab-data/pkg/cache"
-	"github.com/nikhil-github/api-cab-data/pkg/data"
+	"github.com/nikhil-github/api-cab-data/pkg/database"
+	"github.com/nikhil-github/api-cab-data/pkg/handler"
 )
 
 func StartServer(ctx context.Context, appName string,logger *zap.Logger) error {
@@ -24,9 +25,10 @@ func StartServer(ctx context.Context, appName string,logger *zap.Logger) error {
 	}
 
 	cacheSvc := cache.New(cache2go.Cache("Cab-Trips-Data"))
-	dbSvc := data.NewQueryer(db,logger)
+	dbSvc := database.NewQueryer(db,logger)
 	svc := service.NewService(dbSvc,cacheSvc,cacheSvc)
-	router := NewRouter(Params{logger:logger,svc:svc,cache:cacheSvc})
+	router := NewRouter(&handler.Params{Logger:logger,Svc:svc,Cache:cacheSvc})
+
 	errs := make(chan  error)
 	serveHTTP(3000,logger,router,errs)
 

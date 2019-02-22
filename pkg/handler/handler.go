@@ -1,33 +1,40 @@
 package handler
 
 import (
-	"net/http"
-	"github.com/go-chi/chi"
-	"strings"
-	"encoding/json"
-
-	"time"
 	"context"
-	"go.uber.org/zap"
+	"encoding/json"
+	"net/http"
 	"strconv"
-	"github.com/nikhil-github/api-cab-data/pkg/service"
+	"strings"
+	"time"
+
+	"github.com/gorilla/mux"
+	"go.uber.org/zap"
+
+	"github.com/nikhil-github/api-cab-data/pkg/output"
 )
 
+type Params struct {
+	Logger *zap.Logger
+	Svc    TripServicer
+	Cache  Clearer
+}
 
 type TripServicer interface {
-	Trips(ctx context.Context, cabIDs []string,pickUpDate time.Time,byPassCache bool) ([]service.Result, error)
+	Trips(ctx context.Context, cabIDs []string,pickUpDate time.Time,byPassCache bool) ([]output.Result, error)
 }
 
 type Clearer interface {
 	Clear(ctx context.Context)
 }
 
-
+// Trips query for number of trips per medallion.
 func Trips(logger *zap.Logger,tripSvc TripServicer) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		enc := json.NewEncoder(w)
-		pickUpDateStr := chi.URLParam(r, "pickupDate")
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
+		pickUpDateStr := mux.Vars(r)["pickupDate"]
 		pickupDate, err := time.Parse("2006-01-02", pickUpDateStr)
 		if err != nil {
 			logger.Error("error: pickUpDate is not a valid date",zap.String("pickUpDateStr",pickUpDateStr))
@@ -35,7 +42,7 @@ func Trips(logger *zap.Logger,tripSvc TripServicer) http.HandlerFunc {
 			return
 		}
 
-		cabIDs := strings.Split(chi.URLParam(r, "ids"), ",")
+		cabIDs := strings.Split( mux.Vars(r)["ids"], ",")
 		if len(cabIDs) == 0 {
 			logger.Error("medallions missing")
 			responseBadRequest(w,enc,"invalid medallions")
@@ -51,17 +58,18 @@ func Trips(logger *zap.Logger,tripSvc TripServicer) http.HandlerFunc {
 		results,err := tripSvc.Trips(r.Context(),cabIDs,pickupDate,byPassCache)
 		if err != nil {
 			logger.Error("Error: counting trips",zap.Error(err))
-			serverError(w,enc)
+			serverError(w,enc,"service failure")
 			return
 		}
 		responseOK(w,enc,results)
 	}
 }
 
+// ClearCache flushes the cache entries.
 func ClearCache(logger *zap.Logger,cache Clearer) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		cache.Clear(r.Context())
-		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		logger.Info("flushed cache entries")
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`OK`))
 	}
@@ -81,35 +89,29 @@ func parseQueryParam(r *http.Request) (bool,error) {
 }
 
 func responseOK(w http.ResponseWriter, encoder *json.Encoder, response interface{}) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 	encoder.Encode(response)
 }
 
-func responseBadRequest(w http.ResponseWriter, encoder *json.Encoder, response interface{}) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+func responseBadRequest(w http.ResponseWriter, encoder *json.Encoder, response string) {
 	w.WriteHeader(http.StatusBadRequest)
-	encoder.Encode(response)
+	encoder.Encode(NewErrorMsg(response))
 }
 
-func serverError(w http.ResponseWriter, encoder *json.Encoder) {
+func serverError(w http.ResponseWriter, encoder *json.Encoder,response string) {
 	code := http.StatusInternalServerError
 	w.WriteHeader(code)
-	// encoder.Encode(data.GeneralError(http.StatusText(code)))
+	encoder.Encode(NewErrorMsg(response))
 }
 
-//AppError construct for application error
-type AppError struct {
-	Error      error  `json:"error"`
-	StatusCode int    `json:"httpStatusCode"`
-	Message    string `json:"Message"`
+//ErrorMsg construct for application error
+type ErrorMsg struct {
+	Message    string `json:"message"`
 }
 
-//NewAppError returns AppError
-func NewAppError(err error, statusCode int, message string) *AppError {
-	return &AppError{
-		Error:      err,
-		StatusCode: statusCode,
+//NewErrorMsg returns ErrorMsg
+func NewErrorMsg(message string) *ErrorMsg {
+	return &ErrorMsg{
 		Message:    message,
 	}
 }
