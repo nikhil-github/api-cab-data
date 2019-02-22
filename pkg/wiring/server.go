@@ -26,7 +26,7 @@ func StartServer(ctx context.Context, appName string,logger *zap.Logger) error {
 
 	cacheSvc := cache.New(cache2go.Cache("Cab-Trips-Data"))
 	dbSvc := database.NewQueryer(db,logger)
-	svc := service.NewService(dbSvc,cacheSvc,cacheSvc)
+	svc := service.New(dbSvc,cacheSvc,cacheSvc,logger)
 	router := NewRouter(&handler.Params{Logger:logger,Svc:svc,Cache:cacheSvc})
 
 	errs := make(chan  error)

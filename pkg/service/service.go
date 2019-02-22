@@ -6,16 +6,20 @@ import (
 	"fmt"
 
 	"github.com/nikhil-github/api-cab-data/pkg/output"
+	"go.uber.org/zap"
 )
 
-type Service struct {
+const keyNotFound = "Key not found in cache"
+
+type TripService struct {
 	cacheGetter CacheGetter
 	cacheSetter CacheSetter
 	dbGetter Getter
+	logger *zap.Logger
 }
 
 type Getter interface {
-	TripsByPickUpDate(ctx context.Context, medallion string,pickUpDate time.Time) (int, error)
+	Trips(ctx context.Context, medallion string,pickUpDate time.Time) (int, error)
 }
 
 type CacheGetter interface {
@@ -26,41 +30,52 @@ type CacheSetter interface {
 	Set(ctx context.Context, key string, val int)
 }
 
-func NewService( g Getter,cg CacheGetter,cs CacheSetter) *Service {
-	return &Service{dbGetter:g,cacheGetter:cg,cacheSetter:cs}
+func New( g Getter,cg CacheGetter,cs CacheSetter,l *zap.Logger) *TripService {
+	return &TripService{dbGetter: g,cacheGetter:cg,cacheSetter:cs,logger:l}
 }
 
-func (s *Service) Trips(ctx context.Context, medallions []string,pickUpDate time.Time,byPassCache bool) ([]output.Result, error) {
+func (s *TripService) Trips(ctx context.Context, medallions []string,pickUpDate time.Time,byPassCache bool) ([]output.Result, error) {
 
-	var result []output.Result
+	var results []output.Result
 	for _, medallion := range medallions {
-		var count int
-		var err error
-		if byPassCache {
-			count,err = s.getFromDB(ctx, medallion,pickUpDate)
-		} else {
-			count,err = s.cacheGetter.Get(ctx,key(medallion,pickUpDate))
-			if err !=nil && err.Error() == "Key not found in cache" {
-				count,err = s.getFromDB(ctx, medallion,pickUpDate)
-			}
+		result,err := s.get(ctx,medallion,pickUpDate,byPassCache)
+		if err !=nil {
+			s.logger.Error("Error finding trips for medallion:%s",zap.String("medallion",medallion))
+			return []output.Result{},err
 		}
-
-		result = append(result, output.Result{medallion,count})
+		results = append(results, result)
 	}
-	return result,nil
+	return results,nil
 }
 
-func (s *Service) getFromDB(ctx context.Context, cabID string,pickUpDate time.Time)(int ,error) {
-	count,err := s.dbGetter.TripsByPickUpDate(ctx,cabID,pickUpDate)
+func (s *TripService) get(ctx context.Context, medallion string,pickUpDate time.Time,byPassCache bool)(output.Result, error) {
+	var count int
+	var err error
+	if byPassCache {
+		count,err = s.getFromDB(ctx, medallion,pickUpDate)
+		if err !=nil {
+			return output.Result{},err
+		}
+	} else {
+		count,err = s.cacheGetter.Get(ctx,key(medallion,pickUpDate))
+		if err !=nil && err.Error() == keyNotFound {
+			count,err = s.getFromDB(ctx, medallion,pickUpDate)
+		}
+	}
+	return output.Result{Medallion:medallion,Trips:count},nil
+}
+
+func (s *TripService) getFromDB(ctx context.Context, medallion string,pickUpDate time.Time)(int ,error) {
+	count,err := s.dbGetter.Trips(ctx,medallion,pickUpDate)
 	if err !=nil {
 		return 0,err
 	}
-	go s.cacheSetter.Set(ctx,key(cabID,pickUpDate),count)
+	go s.cacheSetter.Set(ctx,key(medallion,pickUpDate),count)
 	return count,nil
 }
 
 
 // key is built by concatinate cabID + pickUpDate.
-func key(cabID string,pickUpDate time.Time,) string {
-	return fmt.Sprintf("%s%d%d%d",cabID,pickUpDate.Year(),pickUpDate.Month(),pickUpDate.Day())
+func key(medallion string,pickUpDate time.Time,) string {
+	return fmt.Sprintf("%s%d%d%d",medallion,pickUpDate.Year(),pickUpDate.Month(),pickUpDate.Day())
 }

@@ -64,7 +64,7 @@ func TestTripsByPickUpDate(t *testing.T) {
 			tt.Fields.MockOperations(mock)
 
 			dao := database.NewQueryer(db,zap.NewNop())
-			count, err := dao.TripsByPickUpDate(context.Background(),tt.Args.CabID,tt.Args.PickUpDate)
+			count, err := dao.Trips(context.Background(),tt.Args.CabID,tt.Args.PickUpDate)
 			assert.NoError(t, mock.ExpectationsWereMet(), "DB Expectations")
 			if tt.Want.Error != "" {
 				assert.EqualError(t, err, tt.Want.Error, "Error")

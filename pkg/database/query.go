@@ -24,8 +24,8 @@ func NewQueryer(db DBQueryer,logger *zap.Logger) *Queryer {
 	return &Queryer{db: db,logger:logger}
 }
 
-// TripsByPickUpDate get the count of trips for a cab by pick up date.
-func (q *Queryer) TripsByPickUpDate(ctx context.Context, medallion string,pickUpDate time.Time) (int, error) {
+// Trips get the count of trips for a cab by medallion and pick up date.
+func (q *Queryer) Trips(ctx context.Context, medallion string,pickUpDate time.Time) (int, error) {
 	query := `
 		SELECT
 			count(medallion)
