@@ -1,4 +1,4 @@
-package cabs
+package data
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
-	"fmt"
+	"go.uber.org/zap"
 )
 
 type DBQueryer interface {
@@ -16,18 +16,19 @@ type DBQueryer interface {
 // Queryer is for providing database query operations.
 type Queryer struct {
 	db DBQueryer
+	logger *zap.Logger
 }
 
 // NewQueryer returns a new instance to query cab trip data.
-func NewQueryer(db DBQueryer) *Queryer {
-	return &Queryer{db: db}
+func NewQueryer(db DBQueryer,logger *zap.Logger) *Queryer {
+	return &Queryer{db: db,logger:logger}
 }
 
-// CabTripsByPickUpDate get the count of trips for a cab by pick up date.
-func (q *Queryer) CabTripsByPickUpDate(ctx context.Context, medallion string,pickUpDate time.Time) (int, error) {
+// TripsByPickUpDate get the count of trips for a cab by pick up date.
+func (q *Queryer) TripsByPickUpDate(ctx context.Context, medallion string,pickUpDate time.Time) (int, error) {
 	query := `
 		SELECT
-			count(*)
+			count(medallion)
 		AS
 			count
 		FROM
@@ -35,22 +36,24 @@ func (q *Queryer) CabTripsByPickUpDate(ctx context.Context, medallion string,pic
 		WHERE	
 			medallion = ?
 		AND
-			DATE(pickup_datetime) = DATE(?);
+			DATE(pickup_datetime) = DATE(?)
 	`
 	rows,err := q.db.QueryxContext(ctx, query, medallion,pickUpDate)
-	fmt.Println(err)
 	if err != nil {
+		q.logger.Error("sql error on query",zap.Error(err))
 		return 0,errors.Wrap(err,"failed to query")
 	}
 	defer rows.Close()
 	var count int
 	for rows.Next() {
 		if err := rows.Scan(&count); err != nil {
+			q.logger.Error("sql error on scan",zap.Error(err))
 			return 0,errors.Wrap(err,"failed to query count")
 		}
 	}
 	err = rows.Err()
 	if err != nil {
+		q.logger.Error("sql error on rows",zap.Error(err))
 		return 0, err
 	}
 	return count, nil

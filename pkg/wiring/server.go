@@ -2,27 +2,51 @@ package wiring
 
 import (
 	"context"
-	"fmt"
-
-	"github.com/nikhil-github/api-cab-data/pkg/cabs"
+	"github.com/nikhil-github/api-cab-data/pkg/service"
 	"github.com/muesli/cache2go"
+	"go.uber.org/zap"
+	"net/http"
+	"fmt"
+	"github.com/pkg/errors"
+	"github.com/nikhil-github/api-cab-data/pkg/cache"
+	"github.com/nikhil-github/api-cab-data/pkg/data"
 )
 
-func StartServer(ctx context.Context, appName string)  {
-
-	fmt.Println("starting server")
+func StartServer(ctx context.Context, appName string,logger *zap.Logger) error {
 
 	dbConfig := DatabaseConfig{
 		URL: "root:password@tcp(localhost:3306)/cabtrips?parseTime=true",
 	}
 
 	db, err := NewDatabase(dbConfig)
-	fmt.Println("db err",err)
-	cacheSvc := cabs.NewCache(cache2go.Cache("Cab-Trips-Data"))
-	dbSvc := cabs.NewQueryer(db)
-	svc := cabs.NewService(dbSvc,cacheSvc,cacheSvc)
-	cabs.NewHandler(svc)
+	if err != nil {
+		logger.Fatal("Failed to get database connection ",zap.Error(err))
+	}
 
-	route(svc)
+	cacheSvc := cache.New(cache2go.Cache("Cab-Trips-Data"))
+	dbSvc := data.NewQueryer(db,logger)
+	svc := service.NewService(dbSvc,cacheSvc,cacheSvc)
+	router := NewRouter(Params{logger:logger,svc:svc,cache:cacheSvc})
+	errs := make(chan  error)
+	serveHTTP(3000,logger,router,errs)
+
+	select {
+	case err := <-errs:
+		return err
+	case <-ctx.Done():
+		return nil
+	}
+	return nil
 }
 
+func serveHTTP(port int, logger *zap.Logger, h http.Handler, errs chan error) {
+	addr := fmt.Sprintf(":%d", port)
+	s := &http.Server{Addr: addr, Handler: h}
+
+	go func() {
+		logger.Info("Listening for HTTP requests", zap.String("http.address", addr))
+		if err := s.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			errs <- errors.Wrapf(err, "error serving HTTP on address %s", addr)
+		}
+	}()
+}

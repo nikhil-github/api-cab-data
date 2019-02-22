@@ -13,7 +13,6 @@ func NewDatabase(config DatabaseConfig) (*sqlx.DB, error) {
 	if err != nil {
 		return nil,  err
 	}
-	// TODO : connections pooling configs
 	db.SetMaxOpenConns(config.Connections.Max)
 	db.SetMaxIdleConns(config.Connections.Idle)
 	db.SetConnMaxLifetime(config.Connections.Lifetime)
