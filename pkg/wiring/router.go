@@ -17,8 +17,8 @@ type Params struct {
 
 func NewRouter(params *Params) *mux.Router {
 	rtr := mux.NewRouter()
-	rtr.Handle("/trips/medallion/{ids}", handler.Trips(params.Logger, params.Svc)).Methods("GET")
-	rtr.Handle("/trips/cache/contents", handler.ClearCache(params.Logger, params.Cache)).Methods("DELETE")
+	rtr.Handle("/trips/v1/medallion/{ids}", handler.Trips(params.Logger, params.Svc)).Methods("GET")
+	rtr.Handle("/trips/v1/cache/contents", handler.ClearCache(params.Logger, params.Cache)).Methods("DELETE")
 	rtr.Handle("/health", params.Health).Methods("GET")
 	return rtr
 }

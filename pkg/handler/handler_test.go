@@ -39,13 +39,13 @@ func TestHandler(t *testing.T) {
 	}{
 		{
 			Name:   "Failure - Invalid pickup date",
-			Args:   args{Path: "/trips/medallion/67EB082BFFE72095EAF18488BEA96050?pickupdate=201p-12-31"},
+			Args:   args{Path: "/trips/v1/medallion/67EB082BFFE72095EAF18488BEA96050?pickupdate=201p-12-31"},
 			Fields: fields{MockExpectations: func(m *mockTripSvc) {}},
 			Want:   want{Status: http.StatusBadRequest},
 		},
 		{
 			Name: "Service failed to query count",
-			Args: args{Path: "/trips/medallion/TTTTTTTT?pickupdate=2013-12-31"},
+			Args: args{Path: "/trips/v1/medallion/TTTTTTTT?pickupdate=2013-12-31"},
 			Fields: fields{MockExpectations: func(m *mockTripSvc) {
 				pd, err := time.Parse("2006-01-02", "2013-12-31")
 				if err != nil {
@@ -57,7 +57,7 @@ func TestHandler(t *testing.T) {
 		},
 		{
 			Name: "Success with one medallion",
-			Args: args{Path: "/trips/medallion/YYYY?pickupdate=2013-12-31"},
+			Args: args{Path: "/trips/v1/medallion/YYYY?pickupdate=2013-12-31"},
 			Fields: fields{MockExpectations: func(m *mockTripSvc) {
 				pd, err := time.Parse("2006-01-02", "2013-12-31")
 				if err != nil {
@@ -69,7 +69,7 @@ func TestHandler(t *testing.T) {
 		},
 		{
 			Name: "Success with multiple medallion",
-			Args: args{Path: "/trips/medallion/YYYY,ZZZZ?pickupdate=2017-10-22"},
+			Args: args{Path: "/trips/v1/medallion/YYYY,ZZZZ?pickupdate=2017-10-22"},
 			Fields: fields{MockExpectations: func(m *mockTripSvc) {
 				pd, err := time.Parse("2006-01-02", "2017-10-22")
 				if err != nil {
@@ -81,7 +81,7 @@ func TestHandler(t *testing.T) {
 		},
 		{
 			Name: "Success with by pass cache flag",
-			Args: args{Path: "/trips/medallion/YYYY?pickupdate=2013-12-31&bypasscache=true"},
+			Args: args{Path: "/trips/v1/medallion/YYYY?pickupdate=2013-12-31&bypasscache=true"},
 			Fields: fields{MockExpectations: func(m *mockTripSvc) {
 				pd, err := time.Parse("2006-01-02", "2013-12-31")
 				if err != nil {

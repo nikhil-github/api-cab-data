@@ -1,5 +1,5 @@
 
-# API NYC Cab Data
+# NYC Cab Data
 
 
 ## Introduction:
@@ -7,15 +7,15 @@
 API Cab Data provides http endpoint to query how many trips a particular cab made for a pick up date(using date part in pick up datetime. Endpoint accepts one or many medallions(comma separated) and returns trips made by each medallion.
 Results are cached for faster access next time. Endpoint allows use to bypass cache for results.
 
-`/trips/medallion/:medallions?pickupdate=:pickupdate&bypasscache=:bypasscache` - GET
+`/trips/v1/medallion/:medallions?pickupdate=:pickupdate&bypasscache=:bypasscache` - GET
 
 API provides a second endpoint to clear the cache entires
 
-`/trips/cache/contents` - DELETE
+`/trips/v1/cache/contents` - DELETE
 
 API Health Check
 
-`/health`
+`/health` - GET
 
 ## Project Set up and Structure:
 Project follows a simple three layered architecture.Handlers receives the requests,validates and
@@ -23,7 +23,7 @@ delegate it to service layer. Service layer interacts with DB and cache APIs to 
 
 GO version 1.9 is used for building the API and MYSQL server the database providing cab trip data.
 
-### Dep is the dependency management tool.
+Dep is the dependency management tool.
 
 ### Structure
 Projects have been packaged based on their responsibility(SINGLE RESPONSIBILITY principle)
@@ -47,15 +47,13 @@ Projects have been packaged based on their responsibility(SINGLE RESPONSIBILITY 
 - Follows data table approach
 - Consistent pattern using Args/Fields/Want format
 
-## Config values
+### Config values
 - Supplied through .env to run locally
 - Docker env file .env.docker
 
-## Pre-Requisites:
+### Pre-Requisites:
 - Git (just to clone the repo)
 - Docker and Docker-compose
-`docker --version`
-`docker-compose --version`
 
 ## Installation:
  Clone this repository
@@ -71,7 +69,7 @@ Projects have been packaged based on their responsibility(SINGLE RESPONSIBILITY 
 
 API will be listening on port 3000 , endpoints:
 
-`http://localhost:3000/trips/medallion/:medallions?pickupdate=:pickupdate&bypasscache=:bypasscache`
+`http://localhost:3000/trips/v1/medallion/:medallions?pickupdate=:pickupdate&bypasscache=:bypasscache`
 
 Note : Please run the database migration before consuming the API.
 
@@ -93,10 +91,12 @@ password : password
 
 Import SQL takes a little while (~30 minutes) due to the large size of the SQL
 
+Migration is required just one time unless DB volumes are removed.
+
 ### Tests
 Number of trips made by cab with medallion - 67EB082BFFE72095EAF18488BEA96050 on 31st Dec 2013
 
-- http://localhost:3000/trips/medallion/67EB082BFFE72095EAF18488BEA96050?pickupdate=2013-12-31&bypasscache=true
+- http://localhost:3000/trips/v1/medallion/67EB082BFFE72095EAF18488BEA96050?pickupdate=2013-12-31&bypasscache=true
 
    ```
    [

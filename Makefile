@@ -25,10 +25,13 @@ test:
 bench:
 	go test -bench=. ./...
 
-run: build
+run: build-all
 	./$(BINARY)
 
-run-docker:
+build-docker:
+	docker-compose build
+
+run-docker: build-docker
 	docker-compose up -d && docker-compose logs -f
 
 stop-docker:
