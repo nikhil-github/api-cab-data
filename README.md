@@ -98,7 +98,6 @@ Import SQL takes a little while (~30 minutes) due to the large size of the SQL
 Migration is required just one time unless DB volumes are removed.
 
 ### Instructions to test the API
-Number of trips made by cab with medallion - 67EB082BFFE72095EAF18488BEA96050 on 31st Dec 2013
 
  1. Request with one medallion
  `curl http://localhost:3000/trips/v1/medallion/67EB082BFFE72095EAF18488BEA96050?pickupdate=2013-12-31&bypasscache=true`
