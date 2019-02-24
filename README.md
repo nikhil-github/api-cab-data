@@ -64,6 +64,8 @@ Dep is the dependency management tool.
  Clone this repository
 `https://github.com/nikhil-github/api-cab-data.git`
 
+Note : Please run the database migration before consuming the API.
+
 ### Run Locally
 
 `make run`
@@ -76,7 +78,6 @@ API will be listening on port 3000 , endpoint:
 
 `http://localhost:3000/trips/v1/medallion/:medallions?pickupdate=:pickupdate&bypasscache=:bypasscache`
 
-Note : Please run the database migration before consuming the API.
 
 ### Make targets
 
@@ -88,7 +89,7 @@ Note : Please run the database migration before consuming the API.
 
 1. `make start-db` - start a mysql database container
 2. `docker exec -it mysql bash` - log in to mysql container
-3. `mysql -u root -p cabtrips < ny_cab_data_cab_trip_data_full.sql`
+3. `mysql -u root -p cabtrips < ny_cab_data_cab_trip_data_full.sql` - load SQL
 
 password : password
 
@@ -96,10 +97,11 @@ Import SQL takes a little while (~30 minutes) due to the large size of the SQL
 
 Migration is required just one time unless DB volumes are removed.
 
-### Tests
+### Instructions to test the API
 Number of trips made by cab with medallion - 67EB082BFFE72095EAF18488BEA96050 on 31st Dec 2013
 
-- http://localhost:3000/trips/v1/medallion/67EB082BFFE72095EAF18488BEA96050?pickupdate=2013-12-31&bypasscache=true
+ 1. Request with one medallion
+ `curl http://localhost:3000/trips/v1/medallion/67EB082BFFE72095EAF18488BEA96050?pickupdate=2013-12-31&bypasscache=true`
 
    ```
    [
@@ -109,7 +111,30 @@ Number of trips made by cab with medallion - 67EB082BFFE72095EAF18488BEA96050 on
      }
    ]
    ```
+  2. Request with multiple medallions
 
+  `curl http://localhost:3000/trips/v1/medallion/67EB082BFFE72095EAF18488BEA96050,D7D598CD99978BD012A87A76A7C891B7?pickupdate=2013-12-31&bypasscache=true`
+
+  ```
+  [
+    {
+        "medallion": "67EB082BFFE72095EAF18488BEA96050",
+        "trips": 39
+    },
+    {
+        "medallion": "D7D598CD99978BD012A87A76A7C891B7",
+        "trips": 0
+    }
+  ]
+  ```
+
+  3. Clear Cache
+
+  `curl -X DELETE http://localhost:3000/trips/v1/cache/contents`
+
+  ```
+  Cache Cleared
+  ```
 ### Assumptions:
 - No requirement for distributed cache and in memory caching is allowed.
 - The date format used in this API is YYYY-MM-DD.

@@ -73,7 +73,7 @@ func ClearCache(logger *zap.Logger, cache Clearer) http.HandlerFunc {
 		cache.Clear(r.Context())
 		logger.Info("flushed cache entries")
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`OK`))
+		w.Write([]byte(`Cache Cleared`))
 	}
 }
 
