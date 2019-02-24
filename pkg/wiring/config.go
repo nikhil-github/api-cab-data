@@ -3,15 +3,20 @@ package wiring
 import "time"
 
 type Config struct {
-	DBConfig DatabaseConfig
+	DB   DBConfig
+	HTTP struct {
+		Port int `envconfig:"default=3000"`
+	}
+	LOG struct {
+		Level string
+	}
 }
 
-type DatabaseConfig struct {
-	URL string
-
+type DBConfig struct {
+	URL         string
 	Connections struct {
-		Idle     int
-		Lifetime time.Duration
-		Max      int
+		Idle     int           `envconfig:"default=10"`
+		Lifetime time.Duration `envconfig:"default=5m"`
+		Max      int           `envconfig:"default=20"`
 	}
 }

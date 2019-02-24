@@ -2,15 +2,12 @@ version: "3"
 
 services:
   app:
-    image: golang:1.9
-    volumes:
-    - ../../:/go/src/api-cab-data
-    working_dir: /go/src/api-cab-data
-    command: bash -c "go build && ./api-cab-data"
+    container_name: api-cab-data
+    build: .
     ports:
     - 3000:3000
     links:
-    - db
+      - db
   db:
     image: mysql:latest
     container_name: mysql

@@ -1,11 +1,6 @@
 #ignore ide files
 /.idea/
-
-#ignore the main binary
 /api-cab-data
-
 /vendor
-/.env
-/coverage.out
 
 .DS_Store

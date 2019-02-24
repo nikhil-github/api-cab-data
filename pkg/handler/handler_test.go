@@ -8,14 +8,13 @@ import (
 	"testing"
 	"time"
 
+	"github.com/nikhil-github/api-cab-data/pkg/handler"
+	"github.com/nikhil-github/api-cab-data/pkg/output"
+	"github.com/nikhil-github/api-cab-data/pkg/wiring"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"go.uber.org/zap"
-
-	"github.com/nikhil-github/api-cab-data/pkg/handler"
-	"github.com/nikhil-github/api-cab-data/pkg/output"
-	"github.com/nikhil-github/api-cab-data/pkg/wiring"
 )
 
 func TestHandler(t *testing.T) {
@@ -40,13 +39,13 @@ func TestHandler(t *testing.T) {
 	}{
 		{
 			Name:   "Failure - Invalid pickup date",
-			Args:   args{Path: "/trips/pickupdate/201p-12-31/medallion/67EB082BFFE72095EAF18488BEA96050"},
+			Args:   args{Path: "/trips/medallion/67EB082BFFE72095EAF18488BEA96050?pickupdate=201p-12-31"},
 			Fields: fields{MockExpectations: func(m *mockTripSvc) {}},
 			Want:   want{Status: http.StatusBadRequest},
 		},
 		{
 			Name: "Service failed to query count",
-			Args: args{Path: "/trips/pickupdate/2013-12-31/medallion/TTTTTTTT"},
+			Args: args{Path: "/trips/medallion/TTTTTTTT?pickupdate=2013-12-31"},
 			Fields: fields{MockExpectations: func(m *mockTripSvc) {
 				pd, err := time.Parse("2006-01-02", "2013-12-31")
 				if err != nil {
@@ -58,7 +57,7 @@ func TestHandler(t *testing.T) {
 		},
 		{
 			Name: "Success with one medallion",
-			Args: args{Path: "/trips/pickupdate/2013-12-31/medallion/YYYY"},
+			Args: args{Path: "/trips/medallion/YYYY?pickupdate=2013-12-31"},
 			Fields: fields{MockExpectations: func(m *mockTripSvc) {
 				pd, err := time.Parse("2006-01-02", "2013-12-31")
 				if err != nil {
@@ -70,7 +69,7 @@ func TestHandler(t *testing.T) {
 		},
 		{
 			Name: "Success with multiple medallion",
-			Args: args{Path: "/trips/pickupdate/2017-10-22/medallion/YYYY,ZZZZ"},
+			Args: args{Path: "/trips/medallion/YYYY,ZZZZ?pickupdate=2017-10-22"},
 			Fields: fields{MockExpectations: func(m *mockTripSvc) {
 				pd, err := time.Parse("2006-01-02", "2017-10-22")
 				if err != nil {
@@ -82,7 +81,7 @@ func TestHandler(t *testing.T) {
 		},
 		{
 			Name: "Success with by pass cache flag",
-			Args: args{Path: "/trips/pickupdate/2013-12-31/medallion/YYYY?bypasscache=true"},
+			Args: args{Path: "/trips/medallion/YYYY?pickupdate=2013-12-31&bypasscache=true"},
 			Fields: fields{MockExpectations: func(m *mockTripSvc) {
 				pd, err := time.Parse("2006-01-02", "2013-12-31")
 				if err != nil {

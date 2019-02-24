@@ -1,37 +1,45 @@
 package wiring
 
 import (
-	"context"
 	"log"
+
+	"github.com/joho/godotenv"
+	"github.com/vrischmann/envconfig"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
 type App struct {
-	Config    Config
-	logger 	  *zap.Logger
+	Config *Config
 }
 
 func (a App) Run() {
-	ctx, _ := context.WithCancel(context.Background())
-	// dev logging is enabled always.
-	logger ,err := configureLogger(true)
+	cfg := a.Config
+	err := godotenv.Load()
+	if err == nil {
+		log.Println("Loaded .env file")
+	}
+	err = envconfig.Init(&cfg)
+	if err != nil {
+		log.Fatal("Error loading config", err)
+	}
+
+	logger, err := configureLogger(cfg.LOG.Level)
 	if err != nil {
 		log.Fatalf("Failed to create zap logger: %s", err.Error())
 	}
 
-	if err := StartServer(ctx,"api-cab-data",logger); err != nil {
-		a.logger.Fatal("Failed to start server", zap.Error(err))
+	if err := Start(cfg, logger); err != nil {
+		logger.Fatal("Failed to start server", zap.Error(err))
 	}
 }
 
-
-func configureLogger(devFlag bool) (*zap.Logger,error) {
+func configureLogger(logLevel string) (*zap.Logger, error) {
 	var level zapcore.Level
-	if devFlag {
+	if logLevel == "INFO" {
 		level = zapcore.InfoLevel
 	} else {
-		level = zapcore.WarnLevel
+		level = zapcore.ErrorLevel
 	}
 
 	cfg := zap.Config{
@@ -40,11 +48,11 @@ func configureLogger(devFlag bool) (*zap.Logger,error) {
 		OutputPaths:      []string{"stdout"},
 		ErrorOutputPaths: []string{"stderr"},
 		EncoderConfig: zapcore.EncoderConfig{
-			MessageKey: "message",
-			LevelKey:    "level",
-			EncodeLevel: zapcore.CapitalLevelEncoder,
-			TimeKey:    "time",
-			EncodeTime: zapcore.ISO8601TimeEncoder,
+			MessageKey:   "message",
+			LevelKey:     "level",
+			EncodeLevel:  zapcore.CapitalLevelEncoder,
+			TimeKey:      "time",
+			EncodeTime:   zapcore.ISO8601TimeEncoder,
 			CallerKey:    "caller",
 			EncodeCaller: zapcore.ShortCallerEncoder,
 		},
