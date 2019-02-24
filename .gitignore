@@ -2,5 +2,6 @@
 /.idea/
 /api-cab-data
 /vendor
+/_vendor-
 
 .DS_Store

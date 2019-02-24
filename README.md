@@ -19,8 +19,13 @@ API Health Check
 
 ## Project Set up and Structure:
 
+Project follows a three layered architecture where the handlers receives the requests and
+delegate it to service layer. Service layer interacts with DB and cache APIs to fetch
+the required data.
 
+# Dep package tool have been used for dependency management.
 
+# Structure
 Projects have been packaged based on their responsibility(SINGLE RESPONSIBILITY principle)
 - handler -> Responsible for handling http requests.
 - wiring -> Initialisation and Wiring up the components.
@@ -29,8 +34,17 @@ Projects have been packaged based on their responsibility(SINGLE RESPONSIBILITY 
 - cache -> Provides interface to Get / Set / Clear cache entries
 - output -> Defines the output JSON structure
 
-## Error handling:
-I usually use the github.com/pkg/errors library for handling errors and early returns technique is also recommended in Golang, so I always try to use it.
+# External Packages
+
+- github.com/gorilla/mux (http request routing and dispatching)
+- github.com/muesli/cache2go (Concurrency-safe golang caching library with expiration capabilities)
+- go.uber.org/zap (provides fast, structured, leveled logging)
+- github.com/pkg/errors(error handling)
+- github.com/stretchr/testify (unit test suite, mocking and assertion)
+- gopkg.in/DATA-DOG/go-sqlmock.v1(SQL mocking library)
+- github.com/jmoiron/sqlx (supporting named queries in SQL)
+
+
 
 ## Assumptions:
 - No requirement for distributed cache and in memory caching is allowed.
@@ -89,9 +103,11 @@ Number of trips made by cab with medallion - 67EB082BFFE72095EAF18488BEA96050 on
 
 - http://localhost:3000/trips/medallion/67EB082BFFE72095EAF18488BEA96050?pickupdate=2013-12-31&bypasscache=true
 
-   ```[
+   ```
+   [
      {
         "medallion": "67EB082BFFE72095EAF18488BEA96050",
         "trips": 39
      }
-   ]```
+   ]
+   ```
