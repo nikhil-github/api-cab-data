@@ -41,13 +41,14 @@ Projects have been packaged based on their responsibility(SINGLE RESPONSIBILITY 
 - github.com/pkg/errors(error handling)
 - github.com/stretchr/testify (unit test suite, mocking and assertion)
 - gopkg.in/DATA-DOG/go-sqlmock.v1(SQL mocking library)
-- github.com/jmoiron/sqlx (supporting named queries in SQL)
+- github.com/jmoiron/sqlx (lib with set of extensions on go's standard database/sql library)
 
 Dep is the dependency management tool.
 
-### Unit Test
+### Unit Tests
 - Follows data table approach
 - Consistent pattern using Args/Fields/Want format
+- Assertion/Mocking using testify
 
 ### Config values
 - Supplied through .env to run locally
@@ -69,7 +70,7 @@ Dep is the dependency management tool.
 
 `make run-docker`
 
-API will be listening on port 3000 , endpoints:
+API will be listening on port 3000 , endpoint:
 
 `http://localhost:3000/trips/v1/medallion/:medallions?pickupdate=:pickupdate&bypasscache=:bypasscache`
 
@@ -77,9 +78,9 @@ Note : Please run the database migration before consuming the API.
 
 ### Make targets
 
-`make` - build the project
-`make fmt` - format the codebase using `go fmt` and `goimports`
-`make test` - run unit tests for the project
+1. `make` - build the project
+2. `make fmt` - format the codebase using `go fmt` and `goimports`
+3. `make test` - run unit tests for the project
 
 ### Database Migration
 
