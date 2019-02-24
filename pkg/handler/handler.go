@@ -10,8 +10,9 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/nikhil-github/api-cab-data/pkg/output"
 	"go.uber.org/zap"
+
+	"github.com/nikhil-github/api-cab-data/pkg/output"
 )
 
 type TripServicer interface {

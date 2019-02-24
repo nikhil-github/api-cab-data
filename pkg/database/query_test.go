@@ -7,11 +7,12 @@ import (
 	"time"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/nikhil-github/api-cab-data/pkg/database"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 	"gopkg.in/DATA-DOG/go-sqlmock.v1"
+
+	"github.com/nikhil-github/api-cab-data/pkg/database"
 )
 
 func TestTripsByPickUpDate(t *testing.T) {

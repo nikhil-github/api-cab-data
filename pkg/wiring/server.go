@@ -9,11 +9,12 @@ import (
 	"github.com/dimiro1/health"
 	dbhealth "github.com/dimiro1/health/db"
 	"github.com/muesli/cache2go"
+	"github.com/pkg/errors"
+	"go.uber.org/zap"
+
 	"github.com/nikhil-github/api-cab-data/pkg/cache"
 	"github.com/nikhil-github/api-cab-data/pkg/database"
 	"github.com/nikhil-github/api-cab-data/pkg/service"
-	"github.com/pkg/errors"
-	"go.uber.org/zap"
 )
 
 func Start(cfg *Config, logger *zap.Logger) error {

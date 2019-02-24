@@ -6,13 +6,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nikhil-github/api-cab-data/pkg/output"
-	"github.com/nikhil-github/api-cab-data/pkg/service"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
+
+	"github.com/nikhil-github/api-cab-data/pkg/output"
+	"github.com/nikhil-github/api-cab-data/pkg/service"
 )
 
 func TestTripService(t *testing.T) {

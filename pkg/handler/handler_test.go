@@ -8,13 +8,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nikhil-github/api-cab-data/pkg/handler"
-	"github.com/nikhil-github/api-cab-data/pkg/output"
-	"github.com/nikhil-github/api-cab-data/pkg/wiring"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"go.uber.org/zap"
+
+	"github.com/nikhil-github/api-cab-data/pkg/output"
+	"github.com/nikhil-github/api-cab-data/pkg/wiring"
 )
 
 func TestHandler(t *testing.T) {
@@ -97,7 +97,7 @@ func TestHandler(t *testing.T) {
 			logger := zap.NewNop()
 			var m mockTripSvc
 			tt.Fields.MockExpectations(&m)
-			params := new(handler.Params)
+			params := new(wiring.Params)
 			params.Svc = &m
 			params.Logger = logger
 			mx := wiring.NewRouter(params)

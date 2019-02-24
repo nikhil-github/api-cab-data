@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/nikhil-github/api-cab-data/pkg/output"
 	"go.uber.org/zap"
+
+	"github.com/nikhil-github/api-cab-data/pkg/output"
 )
 
 const keyNotFound = "Key not found in cache"

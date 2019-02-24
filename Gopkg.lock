@@ -10,6 +10,17 @@
   version = "v1.1.1"
 
 [[projects]]
+  branch = "master"
+  digest = "1:e94291176979545f73a6d94ca0b3b078d30d3152c9cb62ceda1cfdfc366dda5c"
+  name = "github.com/dimiro1/health"
+  packages = [
+    ".",
+    "db",
+  ]
+  pruneopts = "UT"
+  revision = "5a15988393449988e8d4ea493df73df2684675f2"
+
+[[projects]]
   digest = "1:ec6f9bf5e274c833c911923c9193867f3f18788c461f76f05f62bb1510e0ae65"
   name = "github.com/go-sql-driver/mysql"
   packages = ["."]
@@ -147,6 +158,8 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/dimiro1/health",
+    "github.com/dimiro1/health/db",
     "github.com/go-sql-driver/mysql",
     "github.com/gorilla/mux",
     "github.com/jmoiron/sqlx",

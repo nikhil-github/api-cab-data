@@ -10,18 +10,14 @@ RUN apk add --no-cache \
 
 RUN go get -u github.com/golang/dep/cmd/dep
 
-# Add dep config and install first, allowing dependencies to be cached if they are unchanged
 COPY Gopkg.toml Gopkg.lock Makefile ./
-RUN make build
 
-# Add the rest of the source and build (with checks, unit tests etc)
 COPY . ./
-#RUN make build-all-docker
+RUN make build-all
 
 FROM alpine AS release
 
-# Need to add the ca-certificates to support SSL
-#RUN apk add --no-cache ca-certificates
+RUN apk add --no-cache ca-certificates
 
 COPY --from=build /go/src/github.com/nikhil-github/api-cab-data/api-cab-data /go/bin/api-cab-data
 

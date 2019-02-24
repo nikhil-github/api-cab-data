@@ -4,10 +4,11 @@ services:
   app:
     container_name: api-cab-data
     build: .
+    env_file:
+      - .env.docker
     ports:
     - 3000:3000
-    links:
-      - db
+
   db:
     image: mysql:latest
     container_name: mysql
