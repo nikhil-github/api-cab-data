@@ -19,13 +19,12 @@ API Health Check
 
 ## Project Set up and Structure:
 
-Project follows a three layered architecture where the handlers receives the requests and
-delegate it to service layer. Service layer interacts with DB and cache APIs to fetch
-the required data.
+Project follows a simple three layered architecture.Handlers receives the requests,validates and
+delegate it to service layer. Service layer interacts with DB and cache APIs to fetch the required data.
 
-# Dep package tool have been used for dependency management.
+Dep package tool have been used for dependency management.
 
-# Structure
+### Structure
 Projects have been packaged based on their responsibility(SINGLE RESPONSIBILITY principle)
 - handler -> Responsible for handling http requests.
 - wiring -> Initialisation and Wiring up the components.
@@ -34,7 +33,7 @@ Projects have been packaged based on their responsibility(SINGLE RESPONSIBILITY 
 - cache -> Provides interface to Get / Set / Clear cache entries
 - output -> Defines the output JSON structure
 
-# External Packages
+### External Packages
 
 - github.com/gorilla/mux (http request routing and dispatching)
 - github.com/muesli/cache2go (Concurrency-safe golang caching library with expiration capabilities)
@@ -44,12 +43,15 @@ Projects have been packaged based on their responsibility(SINGLE RESPONSIBILITY 
 - gopkg.in/DATA-DOG/go-sqlmock.v1(SQL mocking library)
 - github.com/jmoiron/sqlx (supporting named queries in SQL)
 
+### Unit Test
 
+- Follows data table approach
+- Consistent pattern using Args/Fields/Want format
 
-## Assumptions:
-- No requirement for distributed cache and in memory caching is allowed.
-- The date format used in this API is YYYY-MM-DD.
-- By Passing cache is an optional parameter and if no supplied its value is false.
+## Configs
+
+- Supplied through .env to run locally
+- Docker env file .env.docker
 
 ## Pre-Requisites:
 - Git (just to clone the repo)
@@ -62,11 +64,11 @@ Projects have been packaged based on their responsibility(SINGLE RESPONSIBILITY 
  Clone this repository
 `https://github.com/nikhil-github/api-cab-data.git`
 
-# Run Locally
+### Run Locally
 
 `make run`
 
-# Run in Docker
+### Run in Docker
 
 `make run-docker`
 
@@ -83,9 +85,6 @@ Note : Please run the database migration before consuming the API.
 `make fmt` - format the codebase using `go fmt` and `goimports`
 
 `make test` - run unit tests for the project
-
-### Important: This will download and launch two docker images, please be patient.
-
 
 ### Database Migration
 
@@ -111,3 +110,10 @@ Number of trips made by cab with medallion - 67EB082BFFE72095EAF18488BEA96050 on
      }
    ]
    ```
+
+### Assumptions:
+- No requirement for distributed cache and in memory caching is allowed.
+- The date format used in this API is YYYY-MM-DD.
+- By Passing cache is an optional parameter and if no supplied its value is false.
+- Endpoint allows maximum of 20 medallions per request.
+- Secrets/Configs are supplied as env variables(mimic using .env files)

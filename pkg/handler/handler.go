@@ -49,6 +49,12 @@ func Trips(logger *zap.Logger, tripSvc TripServicer) http.HandlerFunc {
 			return
 		}
 
+		if len(cabIDs) > 20 {
+			logger.Error("Max number of medallions is 20")
+			responseBadRequest(w, enc, "max number of medallions is 20")
+			return
+		}
+
 		results, err := tripSvc.Trips(r.Context(), cabIDs, pickupDate, byPassCache)
 		if err != nil {
 			logger.Error("Error: counting trips", zap.Error(err))
