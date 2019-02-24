@@ -11,7 +11,7 @@ import (
 type Params struct {
 	Health health.Handler
 	Logger *zap.Logger
-	Svc    handler.TripServicer
+	Svc    handler.Servicer
 	Cache  handler.Clearer
 }
 

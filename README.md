@@ -5,11 +5,11 @@
 ## Introduction:
 
 API Cab Data provides http endpoint to query how many trips a particular cab made for a pick up date(using date part in pick up datetime. Endpoint accepts one or many medallions(comma separated) and returns trips made by each medallion.
-Results are cached for faster access next time. Endpoint allows use to bypass cache for results.
+Results are cached for faster access next time. Endpoint allows user to bypass cache for results.
 
 `/trips/v1/medallion/:medallions?pickupdate=:pickupdate&bypasscache=:bypasscache` - GET
 
-API provides a second endpoint to clear the cache entires
+API provides a second endpoint to clear the cache entries
 
 `/trips/v1/cache/contents` - DELETE
 
@@ -18,12 +18,12 @@ API Health Check
 `/health` - GET
 
 ## Project Set up and Structure:
-Project follows a simple three layered architecture.Handlers receives the requests,validates and
-delegate it to service layer. Service layer interacts with DB and cache APIs to fetch the required data.
 
-GO version 1.9 is used for building the API and MYSQL server the database providing cab trip data.
+Application is designed with a simple three layered architecture.
 
-Dep is the dependency management tool.
+Controller -> Service -> Data Access Objects
+
+GO version 1.9 is used for building the app with MYSQL server the database providing cab trip data.
 
 ### Structure
 Projects have been packaged based on their responsibility(SINGLE RESPONSIBILITY principle)
@@ -42,6 +42,8 @@ Projects have been packaged based on their responsibility(SINGLE RESPONSIBILITY 
 - github.com/stretchr/testify (unit test suite, mocking and assertion)
 - gopkg.in/DATA-DOG/go-sqlmock.v1(SQL mocking library)
 - github.com/jmoiron/sqlx (supporting named queries in SQL)
+
+Dep is the dependency management tool.
 
 ### Unit Test
 - Follows data table approach
@@ -76,9 +78,7 @@ Note : Please run the database migration before consuming the API.
 ### Make targets
 
 `make` - build the project
-
 `make fmt` - format the codebase using `go fmt` and `goimports`
-
 `make test` - run unit tests for the project
 
 ### Database Migration
@@ -112,4 +112,4 @@ Number of trips made by cab with medallion - 67EB082BFFE72095EAF18488BEA96050 on
 - The date format used in this API is YYYY-MM-DD.
 - By Passing cache is an optional parameter and if no supplied its value is false.
 - Endpoint allows maximum of 20 medallions per request.
-- Secrets/Configs are supplied as env variables(mimic using .env files)
+- Secrets/Configs are supplied as env variables.

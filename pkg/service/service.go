@@ -75,7 +75,7 @@ func (s *TripService) getFromDB(ctx context.Context, medallion string, pickUpDat
 	return count, nil
 }
 
-// key is built by concatinate cabID + pickUpDate.
+// key is built by concatenate cabID + pickUpDate.
 func key(medallion string, pickUpDate time.Time) string {
 	return fmt.Sprintf("%s%d%d%d", medallion, pickUpDate.Year(), pickUpDate.Month(), pickUpDate.Day())
 }

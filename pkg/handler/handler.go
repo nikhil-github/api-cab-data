@@ -15,7 +15,7 @@ import (
 	"github.com/nikhil-github/api-cab-data/pkg/output"
 )
 
-type TripServicer interface {
+type Servicer interface {
 	Trips(ctx context.Context, cabIDs []string, pickUpDate time.Time, byPassCache bool) ([]output.Result, error)
 }
 
@@ -24,7 +24,7 @@ type Clearer interface {
 }
 
 // Trips query for number of trips per medallion.
-func Trips(logger *zap.Logger, tripSvc TripServicer) http.HandlerFunc {
+func Trips(logger *zap.Logger, tripSvc Servicer) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		enc := json.NewEncoder(w)
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
