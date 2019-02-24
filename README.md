@@ -18,11 +18,12 @@ API Health Check
 `/health`
 
 ## Project Set up and Structure:
-
 Project follows a simple three layered architecture.Handlers receives the requests,validates and
 delegate it to service layer. Service layer interacts with DB and cache APIs to fetch the required data.
 
-Dep package tool have been used for dependency management.
+GO version 1.9 is used for building the API and MYSQL server the database providing cab trip data.
+
+### Dep is the dependency management tool.
 
 ### Structure
 Projects have been packaged based on their responsibility(SINGLE RESPONSIBILITY principle)
@@ -34,7 +35,6 @@ Projects have been packaged based on their responsibility(SINGLE RESPONSIBILITY 
 - output -> Defines the output JSON structure
 
 ### External Packages
-
 - github.com/gorilla/mux (http request routing and dispatching)
 - github.com/muesli/cache2go (Concurrency-safe golang caching library with expiration capabilities)
 - go.uber.org/zap (provides fast, structured, leveled logging)
@@ -44,12 +44,10 @@ Projects have been packaged based on their responsibility(SINGLE RESPONSIBILITY 
 - github.com/jmoiron/sqlx (supporting named queries in SQL)
 
 ### Unit Test
-
 - Follows data table approach
 - Consistent pattern using Args/Fields/Want format
 
-## Configs
-
+## Config values
 - Supplied through .env to run locally
 - Docker env file .env.docker
 
@@ -58,7 +56,6 @@ Projects have been packaged based on their responsibility(SINGLE RESPONSIBILITY 
 - Docker and Docker-compose
 `docker --version`
 `docker-compose --version`
-
 
 ## Installation:
  Clone this repository
@@ -97,7 +94,6 @@ password : password
 Import SQL takes a little while (~30 minutes) due to the large size of the SQL
 
 ### Tests
-
 Number of trips made by cab with medallion - 67EB082BFFE72095EAF18488BEA96050 on 31st Dec 2013
 
 - http://localhost:3000/trips/medallion/67EB082BFFE72095EAF18488BEA96050?pickupdate=2013-12-31&bypasscache=true
