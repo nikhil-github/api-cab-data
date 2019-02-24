@@ -17,6 +17,7 @@ import (
 	"github.com/nikhil-github/api-cab-data/pkg/service"
 )
 
+// Start wires the services and start the app.
 func Start(cfg *Config, logger *zap.Logger) error {
 
 	ctx := context.Background()
@@ -27,8 +28,8 @@ func Start(cfg *Config, logger *zap.Logger) error {
 
 	cacheSvc := cache.New(cache2go.Cache("Cab-Trips-Data"))
 	dbSvc := database.NewQueryer(dbx, logger)
-	svc := service.New(dbSvc, cacheSvc, cacheSvc, logger)
-	router := NewRouter(&Params{Health: registerHealthCheck(dbx.DB), Logger: logger, Svc: svc, Cache: cacheSvc})
+	tripSvc := service.New(dbSvc, cacheSvc, cacheSvc, logger)
+	router := NewRouter(&Params{Health: registerHealthCheck(dbx.DB), Logger: logger, Svc: tripSvc, Cache: cacheSvc})
 
 	errs := make(chan error)
 	serveHTTP(cfg.HTTP.Port, logger, router, errs)
@@ -46,13 +47,14 @@ func serveHTTP(port int, logger *zap.Logger, h http.Handler, errs chan error) {
 	s := &http.Server{Addr: addr, Handler: h}
 
 	go func() {
-		logger.Info("Listening for requests", zap.String("http.address", addr))
+		logger.Info("Listening for requests .....", zap.String("http.address", addr))
 		if err := s.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			errs <- errors.Wrapf(err, "error serving HTTP on address %s", addr)
 		}
 	}()
 }
 
+// register DB health check
 func registerHealthCheck(db *sql.DB) health.Handler {
 	handler := health.NewHandler()
 	handler.AddChecker("MySQL", dbhealth.NewMySQLChecker(db))

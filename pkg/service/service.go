@@ -12,6 +12,7 @@ import (
 
 const keyNotFound = "Key not found in cache"
 
+// TripService embeds dependencies for counting trips.
 type TripService struct {
 	cacheGetter CacheGetter
 	cacheSetter CacheSetter
@@ -19,22 +20,27 @@ type TripService struct {
 	logger      *zap.Logger
 }
 
+// Getter provides method to get trip count from DB.
 type Getter interface {
 	Trips(ctx context.Context, medallion string, pickUpDate time.Time) (int, error)
 }
 
+// CacheGetter provides method to get trip count from Cache.
 type CacheGetter interface {
 	Get(ctx context.Context, key string) (int, error)
 }
 
+// CacheSetter provides method to cache trip counts.
 type CacheSetter interface {
 	Set(ctx context.Context, key string, val int)
 }
 
+// New creates a new Tripservice.
 func New(g Getter, cg CacheGetter, cs CacheSetter, l *zap.Logger) *TripService {
 	return &TripService{dbGetter: g, cacheGetter: cg, cacheSetter: cs, logger: l}
 }
 
+// Trips get the number of trips for each medallion by pickup date.
 func (s *TripService) Trips(ctx context.Context, medallions []string, pickUpDate time.Time, byPassCache bool) ([]output.Result, error) {
 
 	var results []output.Result
@@ -75,7 +81,7 @@ func (s *TripService) getFromDB(ctx context.Context, medallion string, pickUpDat
 	return count, nil
 }
 
-// key is built by concatenate cabID + pickUpDate.
+// key is built by concatenate medallion + pickUpDate.
 func key(medallion string, pickUpDate time.Time) string {
 	return fmt.Sprintf("%s%d%d%d", medallion, pickUpDate.Year(), pickUpDate.Month(), pickUpDate.Day())
 }

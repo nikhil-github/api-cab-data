@@ -19,6 +19,7 @@ func (a App) Run() {
 	if err == nil {
 		log.Println("Loaded .env file")
 	}
+
 	err = envconfig.Init(&cfg)
 	if err != nil {
 		log.Fatal("Error loading config", err)

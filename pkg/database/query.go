@@ -13,7 +13,7 @@ type DBQueryer interface {
 	QueryxContext(ctx context.Context, query string, args ...interface{}) (*sqlx.Rows, error)
 }
 
-// Queryer is for providing database query operations.
+// Queryer provides database query operations.
 type Queryer struct {
 	db     DBQueryer
 	logger *zap.Logger

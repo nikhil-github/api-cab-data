@@ -15,6 +15,7 @@ type Params struct {
 	Cache  handler.Clearer
 }
 
+// NewRouter configure all router.
 func NewRouter(params *Params) *mux.Router {
 	rtr := mux.NewRouter()
 	rtr.Handle("/trips/v1/medallion/{ids}", handler.Trips(params.Logger, params.Svc)).Methods("GET")

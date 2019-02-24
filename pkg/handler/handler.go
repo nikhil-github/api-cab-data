@@ -15,10 +15,12 @@ import (
 	"github.com/nikhil-github/api-cab-data/pkg/output"
 )
 
+// Servicer provides method to get count of trips.
 type Servicer interface {
-	Trips(ctx context.Context, cabIDs []string, pickUpDate time.Time, byPassCache bool) ([]output.Result, error)
+	Trips(ctx context.Context, medallions []string, pickUpDate time.Time, byPassCache bool) ([]output.Result, error)
 }
 
+// Clearer provides method to clear cache.
 type Clearer interface {
 	Clear(ctx context.Context)
 }
@@ -29,8 +31,8 @@ func Trips(logger *zap.Logger, tripSvc Servicer) http.HandlerFunc {
 		enc := json.NewEncoder(w)
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-		cabIDs := strings.Split(mux.Vars(r)["ids"], ",")
-		if len(cabIDs) == 0 {
+		medallions := strings.Split(mux.Vars(r)["ids"], ",")
+		if len(medallions) == 0 {
 			logger.Error("medallions missing")
 			responseBadRequest(w, enc, "invalid medallions")
 		}
@@ -49,13 +51,13 @@ func Trips(logger *zap.Logger, tripSvc Servicer) http.HandlerFunc {
 			return
 		}
 
-		if len(cabIDs) > 20 {
+		if len(medallions) > 20 {
 			logger.Error("Max number of medallions is 20")
 			responseBadRequest(w, enc, "max number of medallions is 20")
 			return
 		}
 
-		results, err := tripSvc.Trips(r.Context(), cabIDs, pickupDate, byPassCache)
+		results, err := tripSvc.Trips(r.Context(), medallions, pickupDate, byPassCache)
 		if err != nil {
 			logger.Error("Error: counting trips", zap.Error(err))
 			serverError(w, enc, "service failure")
@@ -117,12 +119,10 @@ func serverError(w http.ResponseWriter, encoder *json.Encoder, response string) 
 	encoder.Encode(NewErrorMsg(response))
 }
 
-//ErrorMsg construct for application error
 type ErrorMsg struct {
 	Message string `json:"message"`
 }
 
-//NewErrorMsg returns ErrorMsg
 func NewErrorMsg(message string) *ErrorMsg {
 	return &ErrorMsg{
 		Message: message,

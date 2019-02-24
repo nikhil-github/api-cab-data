@@ -6,7 +6,7 @@ This code is 100% in compliance with golint, go_vet and gofmt. Check this for mo
 
 ## Introduction:
 
-API Cab Data provides http endpoint to query how many trips a particular cab made for a pick up date(using date part in pick up datetime. Endpoint accepts one or many medallions(comma separated) and returns trips made by each medallion.
+API Cab Data provides http endpoint to query how many trips a particular cab made for a pick up date(using date part in pick up datetime). Endpoint accepts one or many medallions(comma separated) and returns trips made by each medallion.
 Results are cached for faster access next time. Endpoint allows user to bypass cache for results.
 
 `/trips/v1/medallion/:medallions?pickupdate=:pickupdate&bypasscache=:bypasscache` - GET

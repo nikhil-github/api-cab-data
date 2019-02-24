@@ -121,11 +121,11 @@ type mockTripSvc struct {
 	mock.Mock
 }
 
-func (m *mockTripSvc) Trips(ctx context.Context, cabIDs []string, pickUpDate time.Time, byPassCache bool) ([]output.Result, error) {
-	args := m.Called(ctx, cabIDs, pickUpDate, byPassCache)
+func (m *mockTripSvc) Trips(ctx context.Context, medallions []string, pickUpDate time.Time, byPassCache bool) ([]output.Result, error) {
+	args := m.Called(ctx, medallions, pickUpDate, byPassCache)
 	return args.Get(0).([]output.Result), args.Error(1)
 }
 
-func (m *mockTripSvc) OnTrips(cabIDs []string, pickUpDate time.Time, byPassCache bool) *mock.Call {
-	return m.On("Trips", mock.AnythingOfType("*context.valueCtx"), cabIDs, pickUpDate, byPassCache)
+func (m *mockTripSvc) OnTrips(medallions []string, pickUpDate time.Time, byPassCache bool) *mock.Call {
+	return m.On("Trips", mock.AnythingOfType("*context.valueCtx"), medallions, pickUpDate, byPassCache)
 }

@@ -18,7 +18,7 @@ import (
 func TestTripsByPickUpDate(t *testing.T) {
 	pDate := time.Date(2013, 12, 31, 0, 1, 0, 0, time.UTC)
 	type args struct {
-		CabID      string
+		Medallion  string
 		PickUpDate time.Time
 	}
 	type fields struct {
@@ -37,7 +37,7 @@ func TestTripsByPickUpDate(t *testing.T) {
 	}{
 		{
 			Name: "Success, record found",
-			Args: args{CabID: "67EB082BFFE72095EAF18488BEA96050", PickUpDate: pDate},
+			Args: args{Medallion: "67EB082BFFE72095EAF18488BEA96050", PickUpDate: pDate},
 			Fields: fields{MockOperations: func(m sqlmock.Sqlmock) {
 				columns := []string{"count"}
 				rows := sqlmock.NewRows(columns)
@@ -48,7 +48,7 @@ func TestTripsByPickUpDate(t *testing.T) {
 		},
 		{
 			Name: "Failure, DB error",
-			Args: args{CabID: "55EB082BFFE795EAF18488BEA96050", PickUpDate: pDate},
+			Args: args{Medallion: "55EB082BFFE795EAF18488BEA96050", PickUpDate: pDate},
 			Fields: fields{MockOperations: func(m sqlmock.Sqlmock) {
 				selectCount(m, "55EB082BFFE795EAF18488BEA96050", pDate).WillReturnError(errors.New("sql error"))
 			}},
@@ -65,7 +65,7 @@ func TestTripsByPickUpDate(t *testing.T) {
 			tt.Fields.MockOperations(mock)
 
 			dao := database.NewQueryer(db, zap.NewNop())
-			count, err := dao.Trips(context.Background(), tt.Args.CabID, tt.Args.PickUpDate)
+			count, err := dao.Trips(context.Background(), tt.Args.Medallion, tt.Args.PickUpDate)
 			assert.NoError(t, mock.ExpectationsWereMet(), "DB Expectations")
 			if tt.Want.Error != "" {
 				assert.EqualError(t, err, tt.Want.Error, "Error")
@@ -77,7 +77,7 @@ func TestTripsByPickUpDate(t *testing.T) {
 	}
 }
 
-func selectCount(m sqlmock.Sqlmock, cabID string, pDate time.Time) *sqlmock.ExpectedQuery {
+func selectCount(m sqlmock.Sqlmock, medallion string, pDate time.Time) *sqlmock.ExpectedQuery {
 	return m.ExpectQuery(`
 		SELECT
 			count\(medallion\)
@@ -89,5 +89,5 @@ func selectCount(m sqlmock.Sqlmock, cabID string, pDate time.Time) *sqlmock.Expe
 			medallion = \?
 		AND
 			DATE\(pickup_datetime\) = DATE\(\?\)
-	`).WithArgs(cabID, pDate)
+	`).WithArgs(medallion, pDate)
 }
