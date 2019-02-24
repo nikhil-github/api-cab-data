@@ -35,6 +35,7 @@ I usually use the github.com/pkg/errors library for handling errors and early re
 ## Assumptions:
 - No requirement for distributed cache and in memory caching is allowed.
 - The date format used in this API is YYYY-MM-DD.
+- By Passing cache is an optional parameter and if no supplied its value is false.
 
 ## Pre-Requisites:
 - Git (just to clone the repo)
@@ -56,6 +57,8 @@ I usually use the github.com/pkg/errors library for handling errors and early re
 `make run-docker`
 
 API will be listening on port 3000 , endpoints:
+
+`http://localhost:3000/trips/medallion/:medallions?pickupdate=:pickupdate&bypasscache=:bypasscache`
 
 Note : Please run the database migration before consuming the API.
 
@@ -86,9 +89,9 @@ Number of trips made by cab with medallion - 67EB082BFFE72095EAF18488BEA96050 on
 
 - http://localhost:3000/trips/medallion/67EB082BFFE72095EAF18488BEA96050?pickupdate=2013-12-31&bypasscache=true
 
-   `[
+   ```[
      {
         "medallion": "67EB082BFFE72095EAF18488BEA96050",
         "trips": 39
      }
-   ]`
+   ]```
