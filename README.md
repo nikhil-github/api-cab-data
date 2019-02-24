@@ -86,7 +86,7 @@ Note : Please run the database migration before consuming the API.
 
 ### Database Migration
 
-1. `make start db` - start a mysql database container
+1. `make start-db` - start a mysql database container
 2. `docker exec -it mysql bash` - log in to mysql container
 3. `mysql -u root -p cabtrips < ny_cab_data_cab_trip_data_full.sql`
 
