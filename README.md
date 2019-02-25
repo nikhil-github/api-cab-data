@@ -6,7 +6,7 @@ This code is 100% in compliance with golint, go_vet and gofmt. Check this for mo
 
 ## Introduction:
 
-API Cab Data provides http endpoint to query how many trips a particular cab made for a pick up date(using date part in pick up datetime). Endpoint accepts one or many medallions(comma separated) and returns trips made by each medallion.
+API Cab Data provides rest endpoints to query how many trips a particular cab made for a pick up date(using date part in pick up datetime). Endpoint accepts one or many medallions(comma separated) and returns trips made by each medallion.
 Results are cached for faster access next time. Endpoint allows user to bypass cache for results.
 
 `/trips/v1/medallion/:medallions?pickupdate=:pickupdate&bypasscache=:bypasscache` - GET
@@ -96,6 +96,16 @@ password : password
 Import SQL takes a little while (~30 minutes) due to the large size of the SQL
 
 Migration is required just one time unless DB volumes are removed.
+
+### API client
+
+Simple client is added to the project that consumes the rest endpoints
+To run the client
+
+```
+    go run cmd/api-cab-data-client/main.go
+
+```
 
 ### Instructions to test the API
 
