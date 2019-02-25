@@ -79,8 +79,7 @@ func (q *Queryer) TripsByMedallion(ctx context.Context, medallions []string) ([]
 		GROUP BY medallion;
 	`
 	query, args, err := sqlx.In(rawQuery, medallions)
-	query = q.db.Rebind(query)
-	err = q.db.Select(&res, query, args...)
+	err = q.db.Select(&res, q.db.Rebind(query), args...)
 	fmt.Println(err)
 	if err != nil {
 		q.logger.Error("sql error on query", zap.Error(err))
