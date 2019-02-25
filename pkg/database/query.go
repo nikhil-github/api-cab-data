@@ -2,7 +2,6 @@ package database
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -80,7 +79,6 @@ func (q *Queryer) TripsByMedallion(ctx context.Context, medallions []string) ([]
 	`
 	query, args, err := sqlx.In(rawQuery, medallions)
 	err = q.db.Select(&res, q.db.Rebind(query), args...)
-	fmt.Println(err)
 	if err != nil {
 		q.logger.Error("sql error on query", zap.Error(err))
 		return nil, errors.Wrap(err, "failed to query")

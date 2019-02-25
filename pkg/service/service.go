@@ -50,7 +50,7 @@ func (s *TripService) TripsByMedallionsOnPickUpDate(ctx context.Context, medalli
 	if byPassCache {
 		result, err = s.getFromDBByPickUpDate(ctx, medallion, pickUpDate)
 		if err != nil {
-			s.logger.Error("Error finding trips for medallion", zap.String("medallion", medallion), zap.Time("pickupdate", pickUpDate))
+			s.logger.Error("Error finding trips", zap.String("medallion", medallion), zap.Time("pickupdate", pickUpDate))
 			return output.Result{}, err
 		}
 	} else {
@@ -59,7 +59,7 @@ func (s *TripService) TripsByMedallionsOnPickUpDate(ctx context.Context, medalli
 		if err != nil && err.Error() == keyNotFound {
 			result, err = s.getFromDBByPickUpDate(ctx, medallion, pickUpDate)
 			if err != nil {
-				s.logger.Error("Error finding trips for medallion", zap.String("medallion", medallion), zap.Time("pickupdate", pickUpDate))
+				s.logger.Error("Error finding trips", zap.String("medallion", medallion), zap.Time("pickupdate", pickUpDate))
 				return output.Result{}, err
 			}
 		} else {
@@ -91,7 +91,7 @@ func (s *TripService) TripsByMedallion(ctx context.Context, medallions []string,
 	if byPassCache {
 		results, err = s.getFromDBByMedallion(ctx, medallions)
 		if err != nil {
-			s.logger.Error("Error finding trips for medallion:%s", zap.Strings("medallions", medallions))
+			s.logger.Error("Error finding trips for medallions", zap.Strings("medallions", medallions))
 			return []output.Result{}, err
 		}
 	} else {
@@ -99,7 +99,6 @@ func (s *TripService) TripsByMedallion(ctx context.Context, medallions []string,
 		for _, med := range medallions {
 			tripCount, err = s.cacheGetter.Get(ctx, med)
 			if err != nil && err.Error() == keyNotFound {
-				fmt.Println("cache key not found")
 				dbMedallions = append(dbMedallions, med)
 			} else {
 				results = append(results, output.Result{Medallion: med, Trips: tripCount})
@@ -108,7 +107,7 @@ func (s *TripService) TripsByMedallion(ctx context.Context, medallions []string,
 		if len(dbMedallions) > 0 {
 			dbResults, err = s.getFromDBByMedallion(ctx, dbMedallions)
 			if err != nil {
-				s.logger.Error("Error finding trips for medallion:%s", zap.Strings("medallions", medallions))
+				s.logger.Error("Error finding trips for medallions", zap.Strings("medallions", medallions))
 				return []output.Result{}, err
 			}
 		}

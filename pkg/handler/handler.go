@@ -35,15 +35,15 @@ func TripsByMedallionsOnPickUpDate(logger *zap.Logger, tripSvc Servicer) http.Ha
 		medallion := mux.Vars(r)["medallion"]
 		pickupDate, err := parsePickUpDate(r)
 		if err != nil {
-			logger.Error("error: pickUpDate is not a valid date", zap.Error(err))
+			logger.Error("Error: pickupdate is not a valid", zap.Error(err))
 			responseBadRequest(w, enc, "invalid pick up date")
 			return
 		}
 
 		byPassCache, err := parseByPassCache(r)
 		if err != nil {
-			logger.Error("ByPassCache is not a valid", zap.Bool("byPassCache", byPassCache))
-			responseBadRequest(w, enc, "invalid bypasscache")
+			logger.Error("ByPassCache is not a valid value", zap.Bool("byPassCache", byPassCache))
+			responseBadRequest(w, enc, "invalid bypasscache value")
 			return
 		}
 
@@ -77,8 +77,8 @@ func TripsByMedallion(logger *zap.Logger, tripSvc Servicer) http.HandlerFunc {
 		}
 
 		if len(medallions) > 100 {
-			logger.Error("Max number of medallions is 20")
-			responseBadRequest(w, enc, "max number of medallions is 20")
+			logger.Error("Max number of medallions is 100")
+			responseBadRequest(w, enc, "max number of medallions is 100")
 			return
 		}
 
