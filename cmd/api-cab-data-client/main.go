@@ -9,8 +9,10 @@ import (
 )
 
 const (
-	healthURL = "http://localhost:3000/health"
-	tripsURL  = "http://localhost:3000/trips/v1/medallion/67EB082BFFE72095EAF18488BEA96050?pickupdate=2013-12-31&bypasscache=true"
+	healthURL            = "http://localhost:3000/health"
+	tripsURLbyPickUpdate = "http://localhost:3000/trips/v1/medallion/67EB082BFFE72095EAF18488BEA96050/pickupdate/2013-12-31?bypasscache=true"
+	tripsURLbyMedallions = "http://localhost:3000/trips/v1/medallions/67EB082BFFE72095EAF18488BEA96050,D7D598CD99978BD012A87A76A7C891B7?bypasscache=true"
+	clearCacheURL        = "http://localhost:3000/trips/v1/cache/contents"
 )
 
 type Results struct {
@@ -28,7 +30,8 @@ func main() {
 		Timeout: time.Second * 5,
 	}
 	callHealthCheck(ctx, netClient)
-	callTripService(ctx, netClient)
+	callTripServiceWithPickUpDate(ctx, netClient)
+	callTripServiceWithMedallions(ctx, netClient)
 	callClearCacheService(ctx, netClient)
 }
 
@@ -47,8 +50,28 @@ func callHealthCheck(ctx context.Context, client *http.Client) {
 	log.Println("health check passed!!")
 }
 
-func callTripService(ctx context.Context, client *http.Client) {
-	r, err := http.NewRequest("GET", tripsURL, nil)
+func callTripServiceWithPickUpDate(ctx context.Context, client *http.Client) {
+	r, err := http.NewRequest("GET", tripsURLbyPickUpdate, nil)
+	if err != nil {
+		log.Fatalf("trip svc request creation failed")
+	}
+	res, err := client.Do(r.WithContext(ctx))
+	if err != nil {
+		log.Fatalf("trip service failed")
+	}
+	defer res.Body.Close()
+	if res.StatusCode != http.StatusOK {
+		log.Fatalf("failure with status %d", res.StatusCode)
+	}
+	var result Result
+	if err = json.NewDecoder(res.Body).Decode(&result); err != nil {
+		log.Fatalf("failed to decode the response")
+	}
+	log.Printf("response=> %#v\n", result)
+}
+
+func callTripServiceWithMedallions(ctx context.Context, client *http.Client) {
+	r, err := http.NewRequest("GET", tripsURLbyMedallions, nil)
 	if err != nil {
 		log.Fatalf("trip svc request creation failed")
 	}
@@ -68,7 +91,7 @@ func callTripService(ctx context.Context, client *http.Client) {
 }
 
 func callClearCacheService(ctx context.Context, client *http.Client) {
-	r, err := http.NewRequest("GET", tripsURL, nil)
+	r, err := http.NewRequest("DELETE", clearCacheURL, nil)
 	if err != nil {
 		log.Fatalf("clear cache request creation failed")
 	}

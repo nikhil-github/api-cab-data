@@ -17,7 +17,8 @@ import (
 
 // Servicer provides method to get count of trips.
 type Servicer interface {
-	Trips(ctx context.Context, medallions []string, pickUpDate time.Time, byPassCache bool) ([]output.Result, error)
+	TripsByMedallionsOnPickUpDate(ctx context.Context, medallions string, pickUpDate time.Time, byPassCache bool) (output.Result, error)
+	TripsByMedallion(ctx context.Context, medallions []string, byPassCache bool) ([]output.Result, error)
 }
 
 // Clearer provides method to clear cache.
@@ -25,18 +26,13 @@ type Clearer interface {
 	Clear(ctx context.Context)
 }
 
-// Trips query for number of trips per medallion.
-func Trips(logger *zap.Logger, tripSvc Servicer) http.HandlerFunc {
+// TripsByMedallionsOnPickUpDate get number of trips by medallion on pick up date.
+func TripsByMedallionsOnPickUpDate(logger *zap.Logger, tripSvc Servicer) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		enc := json.NewEncoder(w)
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-		medallions := strings.Split(mux.Vars(r)["ids"], ",")
-		if len(medallions) == 0 {
-			logger.Error("medallions missing")
-			responseBadRequest(w, enc, "invalid medallions")
-		}
-
+		medallion := mux.Vars(r)["medallion"]
 		pickupDate, err := parsePickUpDate(r)
 		if err != nil {
 			logger.Error("error: pickUpDate is not a valid date", zap.Error(err))
@@ -51,13 +47,42 @@ func Trips(logger *zap.Logger, tripSvc Servicer) http.HandlerFunc {
 			return
 		}
 
-		if len(medallions) > 20 {
+		results, err := tripSvc.TripsByMedallionsOnPickUpDate(r.Context(), medallion, pickupDate, byPassCache)
+		if err != nil {
+			logger.Error("Error: counting trips", zap.Error(err))
+			serverError(w, enc, "service failure")
+			return
+		}
+		responseOK(w, enc, results)
+	}
+}
+
+// TripsByMedallion query for number of trips per medallion.
+func TripsByMedallion(logger *zap.Logger, tripSvc Servicer) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		enc := json.NewEncoder(w)
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+
+		medallions := strings.Split(mux.Vars(r)["medallions"], ",")
+		if len(medallions) == 0 {
+			logger.Error("medallions missing")
+			responseBadRequest(w, enc, "missing medallions")
+		}
+
+		byPassCache, err := parseByPassCache(r)
+		if err != nil {
+			logger.Error("ByPassCache is not a valid", zap.Bool("byPassCache", byPassCache))
+			responseBadRequest(w, enc, "invalid bypasscache")
+			return
+		}
+
+		if len(medallions) > 100 {
 			logger.Error("Max number of medallions is 20")
 			responseBadRequest(w, enc, "max number of medallions is 20")
 			return
 		}
 
-		results, err := tripSvc.Trips(r.Context(), medallions, pickupDate, byPassCache)
+		results, err := tripSvc.TripsByMedallion(r.Context(), medallions, byPassCache)
 		if err != nil {
 			logger.Error("Error: counting trips", zap.Error(err))
 			serverError(w, enc, "service failure")
@@ -78,8 +103,7 @@ func ClearCache(logger *zap.Logger, cache Clearer) http.HandlerFunc {
 }
 
 func parsePickUpDate(r *http.Request) (time.Time, error) {
-	queryValues := r.URL.Query()
-	val := queryValues.Get("pickupdate")
+	val := mux.Vars(r)["pickupdate"]
 	if len(val) == 0 {
 		return time.Time{}, errors.New("pickup date missing")
 	}

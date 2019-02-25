@@ -22,7 +22,8 @@ type TripService struct {
 
 // Getter provides method to get trip count from DB.
 type Getter interface {
-	Trips(ctx context.Context, medallion string, pickUpDate time.Time) (int, error)
+	TripsByMedallionsOnPickUpDate(ctx context.Context, medallion string, pickUpDate time.Time) (output.Result, error)
+	TripsByMedallion(ctx context.Context, medallions []string) ([]output.Result, error)
 }
 
 // CacheGetter provides method to get trip count from Cache.
@@ -40,45 +41,97 @@ func New(g Getter, cg CacheGetter, cs CacheSetter, l *zap.Logger) *TripService {
 	return &TripService{dbGetter: g, cacheGetter: cg, cacheSetter: cs, logger: l}
 }
 
-// Trips get the number of trips for each medallion by pickup date.
-func (s *TripService) Trips(ctx context.Context, medallions []string, pickUpDate time.Time, byPassCache bool) ([]output.Result, error) {
-
-	var results []output.Result
-	for _, medallion := range medallions {
-		result, err := s.get(ctx, medallion, pickUpDate, byPassCache)
-		if err != nil {
-			s.logger.Error("Error finding trips for medallion:%s", zap.String("medallion", medallion))
-			return []output.Result{}, err
-		}
-		results = append(results, result)
-	}
-	return results, nil
-}
-
-func (s *TripService) get(ctx context.Context, medallion string, pickUpDate time.Time, byPassCache bool) (output.Result, error) {
-	var count int
+// TripsByMedallionsOnPickUpDate get the number of trips for each medallion by pickup date.
+// Check cache entries first before finding in DB.
+// Query DB for cache misses.
+func (s *TripService) TripsByMedallionsOnPickUpDate(ctx context.Context, medallion string, pickUpDate time.Time, byPassCache bool) (output.Result, error) {
 	var err error
+	var result output.Result
 	if byPassCache {
-		count, err = s.getFromDB(ctx, medallion, pickUpDate)
+		result, err = s.getFromDBByPickUpDate(ctx, medallion, pickUpDate)
 		if err != nil {
+			s.logger.Error("Error finding trips for medallion", zap.String("medallion", medallion), zap.Time("pickupdate", pickUpDate))
 			return output.Result{}, err
 		}
 	} else {
-		count, err = s.cacheGetter.Get(ctx, key(medallion, pickUpDate))
+		var tripCount int
+		tripCount, err = s.cacheGetter.Get(ctx, key(medallion, pickUpDate))
 		if err != nil && err.Error() == keyNotFound {
-			count, err = s.getFromDB(ctx, medallion, pickUpDate)
+			result, err = s.getFromDBByPickUpDate(ctx, medallion, pickUpDate)
+			if err != nil {
+				s.logger.Error("Error finding trips for medallion", zap.String("medallion", medallion), zap.Time("pickupdate", pickUpDate))
+				return output.Result{}, err
+			}
+		} else {
+			result = output.Result{Medallion: medallion, Trips: tripCount}
 		}
 	}
-	return output.Result{Medallion: medallion, Trips: count}, nil
+	return result, nil
 }
 
-func (s *TripService) getFromDB(ctx context.Context, medallion string, pickUpDate time.Time) (int, error) {
-	count, err := s.dbGetter.Trips(ctx, medallion, pickUpDate)
+func (s *TripService) getFromDBByPickUpDate(ctx context.Context, medallion string, pickUpDate time.Time) (output.Result, error) {
+	result, err := s.dbGetter.TripsByMedallionsOnPickUpDate(ctx, medallion, pickUpDate)
 	if err != nil {
-		return 0, err
+		return output.Result{}, err
 	}
-	go s.cacheSetter.Set(ctx, key(medallion, pickUpDate), count)
-	return count, nil
+	go s.cacheSetter.Set(ctx, key(medallion, pickUpDate), result.Trips)
+	return result, err
+}
+
+// TripsByMedallion get the number of trips for medallions.
+// Check cache entries first before finding in DB.
+// By pass cache with byPassCache flag equals true.
+// Cache key is the medallion.
+// Query DB for cache misses.
+func (s *TripService) TripsByMedallion(ctx context.Context, medallions []string, byPassCache bool) ([]output.Result, error) {
+	var results []output.Result
+	var dbResults []output.Result
+	var dbMedallions []string
+	var err error
+	if byPassCache {
+		results, err = s.getFromDBByMedallion(ctx, medallions)
+		if err != nil {
+			s.logger.Error("Error finding trips for medallion:%s", zap.Strings("medallions", medallions))
+			return []output.Result{}, err
+		}
+	} else {
+		var tripCount int
+		for _, med := range medallions {
+			tripCount, err = s.cacheGetter.Get(ctx, med)
+			if err != nil && err.Error() == keyNotFound {
+				fmt.Println("cache key not found")
+				dbMedallions = append(dbMedallions, med)
+			} else {
+				results = append(results, output.Result{Medallion: med, Trips: tripCount})
+			}
+		}
+		if len(dbMedallions) > 0 {
+			dbResults, err = s.getFromDBByMedallion(ctx, dbMedallions)
+			if err != nil {
+				s.logger.Error("Error finding trips for medallion:%s", zap.Strings("medallions", medallions))
+				return []output.Result{}, err
+			}
+		}
+		results = append(results, dbResults...)
+	}
+
+	return results, nil
+
+}
+
+func (s *TripService) getFromDBByMedallion(ctx context.Context, medallions []string) ([]output.Result, error) {
+	results, err := s.dbGetter.TripsByMedallion(ctx, medallions)
+	if err != nil {
+		return nil, err
+	}
+	go s.cacheMedallions(ctx, results)
+	return results, nil
+}
+
+func (s *TripService) cacheMedallions(ctx context.Context, res []output.Result) {
+	for _, r := range res {
+		s.cacheSetter.Set(ctx, r.Medallion, r.Trips)
+	}
 }
 
 // key is built by concatenate medallion + pickUpDate.

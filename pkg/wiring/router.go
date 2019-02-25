@@ -17,8 +17,9 @@ type Params struct {
 
 // NewRouter configure all router.
 func NewRouter(params *Params) *mux.Router {
-	rtr := mux.NewRouter()
-	rtr.Handle("/trips/v1/medallion/{ids}", handler.Trips(params.Logger, params.Svc)).Methods("GET")
+	rtr := mux.NewRouter().StrictSlash(true)
+	rtr.Handle("/trips/v1/medallions/{medallions}", handler.TripsByMedallion(params.Logger, params.Svc)).Methods("GET")
+	rtr.Handle("/trips/v1/medallion/{medallion}/pickupdate/{pickupdate}", handler.TripsByMedallionsOnPickUpDate(params.Logger, params.Svc)).Methods("GET")
 	rtr.Handle("/trips/v1/cache/contents", handler.ClearCache(params.Logger, params.Cache)).Methods("DELETE")
 	rtr.Handle("/health", params.Health).Methods("GET")
 	return rtr

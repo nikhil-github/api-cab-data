@@ -9,9 +9,13 @@ This code is 100% in compliance with golint, go_vet and gofmt. Check this for mo
 API Cab Data provides rest endpoints to query how many trips a particular cab made for a pick up date(using date part in pick up datetime). Endpoint accepts one or many medallions(comma separated) and returns trips made by each medallion.
 Results are cached for faster access next time. Endpoint allows user to bypass cache for results.
 
-`/trips/v1/medallion/:medallions?pickupdate=:pickupdate&bypasscache=:bypasscache` - GET
+`/trips/v1/medallion/:medallion/pickupdate/:pickupdate?bypasscache=:bypasscache` - GET
 
-API provides a second endpoint to clear the cache entries
+API provides a second endpoint to query trips by medallions
+
+`/trips/v1/medallions/:medallions?bypasscache=:bypasscache` - GET
+
+API provides a third endpoint to clear the cache entries
 
 `/trips/v1/cache/contents` - DELETE
 
@@ -76,7 +80,8 @@ Note : Please run the database migration before consuming the API.
 
 API will be listening on port 3000 , endpoint:
 
-`http://localhost:3000/trips/v1/medallion/:medallions?pickupdate=:pickupdate&bypasscache=:bypasscache`
+`http://localhost:3000/trips/v1/medallion/:medallion/pickupdate/:pickupdate?bypasscache=:bypasscache`
+`http://localhost:3000/trips/v1/medallions/:medallions?bypasscache=:bypasscache`
 
 
 ### Make targets
@@ -99,7 +104,7 @@ Migration is required just one time unless DB volumes are removed.
 
 ### API client
 
-Simple client is added to the project that consumes the rest endpoints
+Simple client is added to the project that consumes the rest endpoints.
 To run the client
 
 ```
@@ -109,20 +114,18 @@ To run the client
 
 ### Instructions to test the API
 
- 1. Request with one medallion
- `curl http://localhost:3000/trips/v1/medallion/67EB082BFFE72095EAF18488BEA96050?pickupdate=2013-12-31&bypasscache=true`
+ 1. Request trips by medallion on pickup date
+ `curl http://localhost:3000/trips/v1/medallion/67EB082BFFE72095EAF18488BEA96050/pickupdate/2013-12-31?bypasscache=true`
 
    ```
-   [
-     {
+   {
         "medallion": "67EB082BFFE72095EAF18488BEA96050",
         "trips": 39
-     }
-   ]
+   }
    ```
   2. Request with multiple medallions
 
-  `curl http://localhost:3000/trips/v1/medallion/67EB082BFFE72095EAF18488BEA96050,D7D598CD99978BD012A87A76A7C891B7?pickupdate=2013-12-31&bypasscache=true`
+  `curl http://localhost:3000/trips/v1/medallions/67EB082BFFE72095EAF18488BEA96050,D7D598CD99978BD012A87A76A7C891B7?bypasscache=true`
 
   ```
   [
@@ -132,7 +135,7 @@ To run the client
     },
     {
         "medallion": "D7D598CD99978BD012A87A76A7C891B7",
-        "trips": 0
+        "trips": 3
     }
   ]
   ```
@@ -148,5 +151,5 @@ To run the client
 - No requirement for distributed cache and in memory caching is allowed.
 - The date format used in this API is YYYY-MM-DD.
 - By Passing cache is an optional parameter and if no supplied its value is false.
-- Endpoint allows maximum of 20 medallions per request.
+- Endpoint allows maximum of 100 medallions per request.
 - Secrets/Configs are supplied as env variables.
