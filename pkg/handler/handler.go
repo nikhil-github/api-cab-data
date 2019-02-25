@@ -143,10 +143,12 @@ func serverError(w http.ResponseWriter, encoder *json.Encoder, response string) 
 	encoder.Encode(NewErrorMsg(response))
 }
 
+// ErrorMsg represent error msg.
 type ErrorMsg struct {
 	Message string `json:"message"`
 }
 
+// NewErrorMsg new error message.
 func NewErrorMsg(message string) *ErrorMsg {
 	return &ErrorMsg{
 		Message: message,

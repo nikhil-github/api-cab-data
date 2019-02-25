@@ -15,10 +15,12 @@ const (
 	clearCacheURL        = "http://localhost:3000/trips/v1/cache/contents"
 )
 
+// Results represents all output.
 type Results struct {
 	Res []Result
 }
 
+// Result represents output.
 type Result struct {
 	Medallion string `json:"medallion"`
 	Trips     int    `json:"trips"`

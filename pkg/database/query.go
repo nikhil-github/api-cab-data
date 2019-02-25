@@ -12,6 +12,7 @@ import (
 	"github.com/nikhil-github/api-cab-data/pkg/output"
 )
 
+// DBQueryer provides methods for DB interaction.
 type DBQueryer interface {
 	QueryxContext(ctx context.Context, query string, args ...interface{}) (*sqlx.Rows, error)
 	Select(dest interface{}, query string, args ...interface{}) error
@@ -64,7 +65,7 @@ func (q *Queryer) TripsByMedallionsOnPickUpDate(ctx context.Context, medallion s
 	return output.Result{Medallion: medallion, Trips: count}, nil
 }
 
-// Trips get the count of trips for a cab by medallion.
+// TripsByMedallion get the count of trips for a cab by medallion.
 func (q *Queryer) TripsByMedallion(ctx context.Context, medallions []string) ([]output.Result, error) {
 	var res []output.Result
 	rawQuery := `

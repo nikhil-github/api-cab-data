@@ -9,10 +9,12 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
+// App embeds config.
 type App struct {
 	Config *Config
 }
 
+// Run runs the app.
 func (a App) Run() {
 	cfg := a.Config
 	err := godotenv.Load()

@@ -8,6 +8,7 @@ import (
 	"github.com/nikhil-github/api-cab-data/pkg/handler"
 )
 
+// Params represent router params.
 type Params struct {
 	Health health.Handler
 	Logger *zap.Logger

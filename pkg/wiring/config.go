@@ -2,6 +2,7 @@ package wiring
 
 import "time"
 
+// Config wraps app configs.
 type Config struct {
 	DB   DBConfig
 	HTTP struct {
@@ -12,6 +13,7 @@ type Config struct {
 	}
 }
 
+// DBConfig wraps DB configs.
 type DBConfig struct {
 	URL         string
 	Connections struct {
